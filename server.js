@@ -6,6 +6,7 @@ const { v4: uuidv4 } = require('uuid');
 
 const ledger = require('./ledger');
 const provider = require('./provider');
+const { getPlans, PLANS_DATA } = require('./plans');
 const { supabase } = ledger;
 
 const app = express();
@@ -28,6 +29,13 @@ app.get('/api/accounts', async (req, res) => {
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
+});
+
+// 1.5 Fetch Real Telecom Operator Plans Catalog
+app.get('/api/plans', (req, res) => {
+  const operator = req.query.operator || 'Airtel';
+  const plans = getPlans(operator);
+  res.json({ success: true, operator, plans });
 });
 
 // 2. Cashfree Sandbox: Create Payment Order

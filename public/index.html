@@ -39,6 +39,41 @@
       border-color: #CBD5E1;
     }
     
+    .plan-tab {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 9999px;
+      white-space: nowrap;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      color: #475569;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .plan-tab:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+    .plan-tab.active {
+      background: #0f172a;
+      color: #ffffff;
+      border-color: #0f172a;
+    }
+    .plan-card {
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+    .plan-card:hover {
+      border-color: #059669;
+      transform: translateY(-1px);
+    }
+    .plan-card.selected {
+      border-color: #059669;
+      background-color: #f0fdf4;
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+    }
+
     /* Custom Scrollbar */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #F1F5F9; }
@@ -207,7 +242,7 @@
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Operator</label>
-              <select id="retOp" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs text-slate-900 font-semibold focus:bg-white focus:outline-none focus:border-slate-800 transition">
+              <select id="retOp" onchange="onOperatorChange()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 text-xs text-slate-900 font-semibold focus:bg-white focus:outline-none focus:border-slate-800 transition">
                 <option value="Airtel">Airtel 5G</option>
                 <option value="Jio">Jio True 5G</option>
                 <option value="Vi">Vi Hero</option>
@@ -218,21 +253,55 @@
               <label class="block text-xs font-semibold text-slate-700 mb-1">Amount (₹)</label>
               <div class="relative">
                 <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center text-slate-400 font-bold text-xs">₹</span>
-                <input id="retAmt" type="number" value="100" min="10" step="10" class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-7 pr-2.5 py-2 text-xs font-mono font-bold text-slate-900 focus:bg-white focus:outline-none focus:border-slate-800 transition">
+                <input id="retAmt" type="number" value="299" min="10" step="1" oninput="onCustomAmountChange()" class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-7 pr-2.5 py-2 text-xs font-mono font-bold text-slate-900 focus:bg-white focus:outline-none focus:border-slate-800 transition">
               </div>
             </div>
           </div>
 
-          <!-- Quick Plans & Instant Commission Preview -->
-          <div class="flex flex-wrap justify-between items-center gap-2 mt-3 pt-1">
-            <div class="flex gap-1.5">
-              <button onclick="setRechargePlan(199)" class="text-xs px-2.5 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-mono font-semibold border border-slate-200">₹199</button>
-              <button onclick="setRechargePlan(239)" class="text-xs px-2.5 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-mono font-semibold border border-slate-200">₹239</button>
-              <button onclick="setRechargePlan(299)" class="text-xs px-2.5 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-mono font-semibold border border-slate-200">₹299</button>
-              <button onclick="setRechargePlan(666)" class="text-xs px-2.5 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-mono font-semibold border border-slate-200">₹666</button>
+          <!-- Real Operator Plans Browser -->
+          <div class="mt-4 pt-3 border-t border-slate-200">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-extrabold text-slate-900 uppercase tracking-wide flex items-center gap-1.5">
+                  <i class="fa-solid fa-fire text-amber-500"></i> <span id="planOpHeading">Airtel</span> Official Plans
+                </span>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  Dukaan Profit: 1.50%
+                </span>
+              </div>
+              <span class="text-[11px] text-slate-500 font-medium">Click plan to select</span>
             </div>
-            <div class="text-xs text-slate-600">
-              Your Commission: <strong class="text-emerald-700 font-mono font-extrabold text-sm">₹<span id="retPreviewComm">1.50</span></strong>
+
+            <!-- Categories Tabs -->
+            <div class="flex gap-1.5 overflow-x-auto pb-1.5 mb-2.5" id="planCategoryTabs">
+              <button onclick="filterPlanCategory('All')" id="tab_All" class="plan-tab active">All Plans</button>
+              <button onclick="filterPlanCategory('Popular')" id="tab_Popular" class="plan-tab">🔥 Popular / 5G</button>
+              <button onclick="filterPlanCategory('Data')" id="tab_Data" class="plan-tab">⚡ Data Booster</button>
+              <button onclick="filterPlanCategory('Voice')" id="tab_Voice" class="plan-tab">📞 Value / Voice</button>
+              <button onclick="filterPlanCategory('Annual')" id="tab_Annual" class="plan-tab">🌟 365 Days</button>
+            </div>
+
+            <!-- Plan Cards Grid -->
+            <div id="plansContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[220px] overflow-y-auto pr-1">
+              <div class="text-xs text-slate-400 py-4 col-span-2 text-center">Loading operator plans...</div>
+            </div>
+
+            <!-- Selected Plan & Commission Callout Bar -->
+            <div id="planSummaryBar" class="mt-3 p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-wrap justify-between items-center text-xs">
+              <div class="flex items-center gap-2">
+                <span class="text-slate-500">Customer Pays:</span>
+                <span class="font-black text-slate-900 font-mono text-sm">₹<span id="summaryCustomerPays">299.00</span></span>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <div>
+                  <span class="text-slate-500">Net Cost:</span>
+                  <span class="font-bold text-slate-700 font-mono">₹<span id="summaryWalletCost">294.51</span></span>
+                </div>
+                <div class="px-2.5 py-0.5 rounded-lg bg-emerald-100 text-emerald-800 font-extrabold flex items-center gap-1">
+                  <i class="fa-solid fa-coins text-emerald-600 text-[10px]"></i>
+                  <span>Dukaan Profit: ₹<span id="retPreviewComm">4.49</span></span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -594,6 +663,9 @@
     let activePanel = 'retailer';
     let currentAccounts = [];
     let currentCashfreeOrder = null;
+    let currentOperatorPlans = [];
+    let activePlanCategory = 'All';
+    let selectedPlanId = 'airtel_299';
 
     window.addEventListener('DOMContentLoaded', () => {
       const urlParams = new URLSearchParams(window.location.search);
@@ -603,19 +675,122 @@
       }
       switchPanel(activePanel);
       fetchAllData();
-
-      document.getElementById('retAmt').addEventListener('input', (e) => {
-        const val = Number(e.target.value) || 0;
-        document.getElementById('retPreviewComm').innerText = (val * 0.015).toFixed(2);
-      });
+      fetchOperatorPlans('Airtel');
+      updateCommissionSummary(299);
 
       // Polling every 4 seconds
       setInterval(fetchAllData, 4000);
     });
 
+    async function fetchOperatorPlans(operator) {
+      try {
+        const op = operator || document.getElementById('retOp').value;
+        const heading = document.getElementById('planOpHeading');
+        if (heading) heading.innerText = op;
+        const res = await fetch(`/api/plans?operator=${encodeURIComponent(op)}`);
+        const data = await res.json();
+        if (data.success && data.plans) {
+          currentOperatorPlans = data.plans;
+          renderPlans();
+        }
+      } catch (err) {
+        console.error('Fetch plans error:', err);
+      }
+    }
+
+    function renderPlans() {
+      const container = document.getElementById('plansContainer');
+      if (!container) return;
+
+      const filtered = activePlanCategory === 'All' 
+        ? currentOperatorPlans 
+        : currentOperatorPlans.filter(p => p.category === activePlanCategory);
+
+      if (!filtered.length) {
+        container.innerHTML = `<div class="text-xs text-slate-400 py-4 col-span-2 text-center">No plans found in this category.</div>`;
+        return;
+      }
+
+      const currentAmount = Number(document.getElementById('retAmt').value) || 0;
+
+      container.innerHTML = filtered.map(p => {
+        const isSelected = (selectedPlanId === p.id) || (currentAmount === p.amountInr);
+        const profit = (p.amountInr * 0.015).toFixed(2);
+        return `
+          <div onclick="selectPlan('${p.id}', ${p.amountInr})" class="plan-card p-2.5 rounded-xl border ${isSelected ? 'selected' : 'border-slate-200 bg-white'} relative">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="text-base font-black text-slate-900 font-mono">₹${p.amountInr}</span>
+                <span class="text-[11px] font-bold text-slate-500 ml-1.5">${p.validity}</span>
+              </div>
+              <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                +₹${profit} Profit
+              </span>
+            </div>
+            <div class="text-xs font-bold text-slate-800 mt-1 flex items-center gap-1.5 flex-wrap">
+              <span><i class="fa-solid fa-wifi text-[10px] text-sky-600"></i> ${p.data}</span>
+              <span class="text-slate-300">•</span>
+              <span><i class="fa-solid fa-phone text-[10px] text-emerald-600"></i> ${p.calls}</span>
+            </div>
+            <div class="text-[10.5px] text-slate-500 mt-0.5 line-clamp-1">${p.perks}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectPlan(planId, amountInr) {
+      selectedPlanId = planId;
+      document.getElementById('retAmt').value = amountInr;
+      updateCommissionSummary(amountInr);
+      renderPlans();
+    }
+
+    function onCustomAmountChange() {
+      const amount = Number(document.getElementById('retAmt').value) || 0;
+      selectedPlanId = null;
+      updateCommissionSummary(amount);
+      renderPlans();
+    }
+
+    function onOperatorChange() {
+      const op = document.getElementById('retOp').value;
+      selectedPlanId = null;
+      fetchOperatorPlans(op);
+    }
+
+    function filterPlanCategory(category) {
+      activePlanCategory = category;
+      ['All', 'Popular', 'Data', 'Voice', 'Annual'].forEach(cat => {
+        const tab = document.getElementById('tab_' + cat);
+        if (tab) {
+          if (cat === category) {
+            tab.className = 'plan-tab active';
+          } else {
+            tab.className = 'plan-tab';
+          }
+        }
+      });
+      renderPlans();
+    }
+
+    function updateCommissionSummary(amt) {
+      const amount = Number(amt) || 0;
+      const profit = (amount * 0.015).toFixed(2);
+      const netCost = (amount - profit).toFixed(2);
+
+      const paysEl = document.getElementById('summaryCustomerPays');
+      const costEl = document.getElementById('summaryWalletCost');
+      const commEl = document.getElementById('retPreviewComm');
+
+      if (paysEl) paysEl.innerText = amount.toFixed(2);
+      if (costEl) costEl.innerText = netCost;
+      if (commEl) commEl.innerText = profit;
+    }
+
     function setRechargePlan(amt) {
       document.getElementById('retAmt').value = amt;
-      document.getElementById('retPreviewComm').innerText = (amt * 0.015).toFixed(2);
+      updateCommissionSummary(amt);
+      renderPlans();
     }
 
     function switchPanel(panel) {
