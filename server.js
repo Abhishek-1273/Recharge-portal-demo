@@ -169,6 +169,27 @@ app.post('/api/transfer-balance', async (req, res) => {
   }
 });
 
+// 5.5 Withdraw Balance to Bank Account / UPI (Instant IMPS Payout Simulation)
+app.post('/api/withdraw', async (req, res) => {
+  try {
+    const { userId = 'retailer', amountInr, payoutMethod = 'UPI', destinationDetails } = req.body;
+    if (!amountInr || amountInr <= 0) {
+      return res.status(400).json({ success: false, error: 'Enter valid withdrawal amount in Rupees' });
+    }
+    if (!destinationDetails || !destinationDetails.trim()) {
+      return res.status(400).json({ success: false, error: 'Enter valid UPI ID or Bank Account Details' });
+    }
+
+    const amountPaise = Math.round(Number(amountInr) * 100);
+    const result = await ledger.withdrawMoney(userId, amountPaise, payoutMethod, destinationDetails);
+
+    const accounts = await ledger.getAllAccounts();
+    res.json({ success: true, result, accounts });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
 // 6. Perform Recharge
 app.post('/api/recharge', async (req, res) => {
   const {

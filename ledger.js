@@ -353,6 +353,56 @@ async function getPendingTransactions() {
   return data;
 }
 
+// Withdraw balance to Bank / UPI (IMPS Payout)
+function withdrawMoney(userId, amountPaise, payoutMethod = 'UPI', destinationDetails = 'partner@upi') {
+  if (amountPaise <= 0) return Promise.reject(new Error('Withdrawal amount must be greater than zero'));
+
+  return financialQueue.acquire(async () => {
+    const { data: acc, error: fetchErr } = await supabase
+      .from('accounts')
+      .select('balance_paise, hold_paise')
+      .eq('user_id', userId)
+      .single();
+
+    if (fetchErr || !acc) throw new Error('Account not found in Supabase: ' + (fetchErr?.message || ''));
+
+    const available = Number(acc.balance_paise) - Number(acc.hold_paise);
+    if (available < amountPaise) {
+      throw new Error(`Insufficient available balance! Available: ₹${(available / 100).toFixed(2)}, Requested: ₹${(amountPaise / 100).toFixed(2)}`);
+    }
+
+    const newBalance = Number(acc.balance_paise) - amountPaise;
+    const payoutRef = 'PAYOUT_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+    const rrn = 'RRN' + Math.floor(100000000000 + Math.random() * 900000000000);
+
+    // 1. Debit account balance
+    await supabase.from('accounts').update({ balance_paise: newBalance }).eq('user_id', userId);
+
+    // 2. Add immutable ledger entry
+    await supabase.from('ledger_entries').insert([{
+      entry_id: uuidv4(),
+      user_id: userId,
+      amount_paise: -amountPaise,
+      type: 'BANK_WITHDRAWAL',
+      reference_id: payoutRef,
+      notes: `Instant IMPS Payout to ${destinationDetails} (${payoutMethod.toUpperCase()}) • RRN: ${rrn}`
+    }]);
+
+    return {
+      success: true,
+      userId,
+      amountPaise,
+      amountInr: (amountPaise / 100).toFixed(2),
+      payoutRef,
+      rrn,
+      payoutMethod,
+      destinationDetails,
+      newBalancePaise: newBalance,
+      newBalanceInr: (newBalance / 100).toFixed(2)
+    };
+  });
+}
+
 // Reset Demo in Supabase
 async function resetDemo() {
   await supabase.from('ledger_entries').delete().neq('id', 0);
@@ -378,6 +428,7 @@ module.exports = {
   supabase,
   getAllAccounts,
   addMoney,
+  withdrawMoney,
   transferBalance,
   holdForRecharge,
   finalizeSuccess,

@@ -5,3 +5,8 @@ node_modules/
 cloudflared.exe
 .env
 
+# PDF and report generation files (not needed in repo)
+*.pdf
+generate_*.py
+report.html
+tunnel-daemon.js

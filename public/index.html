@@ -163,13 +163,18 @@
           <p class="text-xs text-slate-500 mt-1">Recharge phones for customers & earn an instant <strong class="text-emerald-700 font-bold">1.50% commission</strong> directly to wallet.</p>
         </div>
         
-        <div class="bg-slate-50 p-4 sm:p-5 rounded-xl border border-slate-200 text-right min-w-[230px]">
+        <div class="bg-slate-50 p-4 sm:p-5 rounded-xl border border-slate-200 text-right min-w-[240px]">
           <span class="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Available Recharge Balance</span>
           <div id="retPageBalance" class="text-3xl font-black text-emerald-700 font-mono tracking-tight mt-1">
             ₹1,000.00
           </div>
           <div id="retPageHold" class="text-xs text-amber-700 mt-1.5 font-bold hidden flex items-center justify-end gap-1.5">
             <i class="fa-solid fa-clock"></i> In Processing: <span id="retHoldAmt" class="font-mono">₹0.00</span>
+          </div>
+          <div class="mt-3 flex justify-end gap-2">
+            <button onclick="openWithdrawModal('retailer')" class="text-xs bg-white hover:bg-slate-100 text-slate-800 font-bold py-1.5 px-3 rounded-lg border border-slate-300 shadow-2xs transition inline-flex items-center gap-1.5">
+              <i class="fa-solid fa-building-columns text-emerald-600"></i> Withdraw to Bank
+            </button>
           </div>
         </div>
       </div>
@@ -200,7 +205,7 @@
               <label class="block text-xs font-bold text-slate-700">Top-Up Amount (₹)</label>
               <div class="relative">
                 <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 font-bold">₹</span>
-                <input id="retTopupAmount" type="number" value="500" min="1" step="10" class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-8 pr-3 py-2 text-sm text-slate-900 font-mono font-bold focus:bg-white focus:outline-none focus:border-emerald-600 transition">
+                <input id="retTopupAmount" type="number" value="500" min="1" step="1" class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-8 pr-3 py-2 text-sm text-slate-900 font-mono font-bold focus:bg-white focus:outline-none focus:border-emerald-600 transition">
               </div>
 
               <!-- Quick Chips -->
@@ -329,6 +334,18 @@
 
       </div>
 
+      <!-- Retailer Pending Recharges & Dispute Resolver -->
+      <section id="retPendingDisputeSection" class="hidden bg-amber-50 border border-amber-200 rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-xs font-bold text-amber-900 flex items-center gap-2">
+            <i class="fa-solid fa-clock-rotate-left text-amber-600"></i>
+            Pending Recharges In Processing (<span id="retPendingCount">0</span>)
+          </h3>
+          <span class="text-[11px] text-amber-800 font-semibold font-mono">Funds held safely in wallet until operator responds</span>
+        </div>
+        <div id="retPendingList" class="space-y-2"></div>
+      </section>
+
       <!-- Retailer Passbook -->
       <section class="card-clean rounded-2xl p-6">
         <div class="flex justify-between items-center mb-3">
@@ -372,13 +389,18 @@
           <p class="text-xs text-slate-500 mt-1">Manage downline retailers & earn automated <strong class="text-sky-700 font-bold">1.00% commission</strong> on every transaction.</p>
         </div>
         
-        <div class="bg-slate-50 p-4 sm:p-5 rounded-xl border border-slate-200 text-right min-w-[230px]">
+        <div class="bg-slate-50 p-4 sm:p-5 rounded-xl border border-slate-200 text-right min-w-[240px]">
           <span class="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Earned Commission Balance</span>
           <div id="distPageBalance" class="text-3xl font-black text-sky-700 font-mono tracking-tight mt-1">
             ₹0.00
           </div>
           <div class="text-[11px] text-emerald-700 mt-1.5 font-bold flex items-center justify-end gap-1">
             <i class="fa-solid fa-arrow-trend-up"></i> Downline Earnings (1.00%)
+          </div>
+          <div class="mt-3 flex justify-end gap-2">
+            <button onclick="openWithdrawModal('distributor')" class="text-xs bg-white hover:bg-slate-100 text-slate-800 font-bold py-1.5 px-3 rounded-lg border border-slate-300 shadow-2xs transition inline-flex items-center gap-1.5">
+              <i class="fa-solid fa-building-columns text-sky-600"></i> Withdraw to Bank
+            </button>
           </div>
         </div>
       </div>
@@ -421,7 +443,13 @@
                 <label class="block text-xs font-bold text-slate-700 mb-1">Transfer Amount (₹)</label>
                 <div class="relative">
                   <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-bold text-sm">₹</span>
-                  <input id="distTransferAmount" type="number" value="100" min="1" step="10" class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-8 pr-3 py-2 text-sm text-slate-900 font-mono font-bold focus:bg-white focus:outline-none focus:border-sky-600 transition">
+                  <input id="distTransferAmount" type="number" value="500" min="1" step="1" class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-8 pr-3 py-2 text-sm text-slate-900 font-mono font-bold focus:bg-white focus:outline-none focus:border-sky-600 transition">
+                </div>
+                <div class="flex gap-2 mt-2">
+                  <button type="button" onclick="document.getElementById('distTransferAmount').value=200" class="text-xs px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold border border-slate-200 transition">+₹200</button>
+                  <button type="button" onclick="document.getElementById('distTransferAmount').value=500" class="text-xs px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold border border-slate-200 transition">+₹500</button>
+                  <button type="button" onclick="document.getElementById('distTransferAmount').value=1000" class="text-xs px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold border border-slate-200 transition">+₹1,000</button>
+                  <button type="button" onclick="document.getElementById('distTransferAmount').value=2000" class="text-xs px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold border border-slate-200 transition">+₹2,000</button>
                 </div>
               </div>
             </div>
@@ -539,6 +567,65 @@
         </div>
       </div>
 
+      <!-- Super Master Stock Allocation Card -->
+      <section class="card-clean rounded-2xl p-6 border-l-4 border-l-amber-500">
+        <div class="flex items-center justify-between pb-3.5 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center font-bold">
+              <i class="fa-solid fa-boxes-stacked text-sm"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-900 text-sm">Wholesale Stock Allocation (Super ➔ Distributor)</h3>
+              <p class="text-[11px] text-slate-500">Credit working balance to distributor after receiving bank NEFT/Cash payment.</p>
+            </div>
+          </div>
+          <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
+            Admin Power
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          <!-- Target Partner -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Select Downline Partner</label>
+            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-300 flex justify-between items-center text-xs">
+              <span class="font-bold text-slate-800 flex items-center gap-1.5">
+                <i class="fa-solid fa-building text-sky-600"></i> Distributor 1 (Territory)
+              </span>
+              <span id="superDistBalDisplay" class="font-mono font-bold text-sky-700">Bal: ₹5,000.00</span>
+            </div>
+          </div>
+
+          <!-- Stock Amount -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Stock Amount to Allocate (₹)</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-bold text-xs">₹</span>
+              <input id="superStockAmount" type="number" value="10000" min="100" step="100" class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-8 pr-3 py-2 text-xs font-mono font-bold text-slate-900 focus:bg-white focus:outline-none focus:border-amber-600 transition">
+            </div>
+            <div class="flex gap-1.5 mt-1.5">
+              <button type="button" onclick="document.getElementById('superStockAmount').value=5000" class="text-[10.5px] px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold border border-slate-200">+₹5k</button>
+              <button type="button" onclick="document.getElementById('superStockAmount').value=10000" class="text-[10.5px] px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold border border-slate-200">+₹10k</button>
+              <button type="button" onclick="document.getElementById('superStockAmount').value=25000" class="text-[10.5px] px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold border border-slate-200">+₹25k</button>
+              <button type="button" onclick="document.getElementById('superStockAmount').value=50000" class="text-[10.5px] px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold border border-slate-200">+₹50k</button>
+            </div>
+          </div>
+
+          <!-- Bank Deposit Reference / Button -->
+          <div class="flex flex-col justify-between">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Payment Reference / Note</label>
+              <input id="superStockNote" type="text" value="Bank NEFT Received (HDFC Bank)" placeholder="e.g. Bank NEFT / Cash received" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-amber-600 transition">
+            </div>
+            <button onclick="allocateStockToDistributor()" id="superStockBtn" class="mt-2.5 w-full py-2 px-3 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-boxes-packing"></i> Credit Stock to Distributor
+            </button>
+          </div>
+        </div>
+
+        <div id="superStockAlert" class="mt-3 hidden p-2.5 rounded-xl text-xs font-bold border"></div>
+      </section>
+
       <!-- Super Pending Resolver -->
       <section id="superPendingSection" class="hidden bg-amber-50 border border-amber-200 rounded-2xl p-5">
         <div class="flex items-center justify-between mb-3">
@@ -655,6 +742,101 @@
 
       </div>
 
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- WITHDRAW TO BANK / UPI MODAL (IMPS PAYOUT) -->
+  <!-- ============================================================ -->
+  <div id="withdrawModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs hidden transition-all">
+    <div class="bg-white border border-slate-200 rounded-2xl max-w-sm w-full shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      
+      <!-- Modal Header -->
+      <div class="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">
+            <i class="fa-solid fa-building-columns"></i>
+          </div>
+          <div>
+            <h4 class="font-extrabold text-slate-900 text-xs">Withdraw Funds to Bank</h4>
+            <span class="text-[10px] font-mono text-emerald-700 font-bold">Instant 24x7 IMPS Payout</span>
+          </div>
+        </div>
+        <button onclick="closeWithdrawModal()" class="text-slate-400 hover:text-slate-700 text-sm p-1">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-5 space-y-4">
+        
+        <!-- Balance Status -->
+        <div class="bg-slate-50 rounded-xl p-3 border border-slate-200 flex justify-between items-center">
+          <div>
+            <div class="text-[10px] text-slate-500 uppercase font-semibold">Account</div>
+            <div class="text-xs font-bold text-slate-900 capitalize" id="withdrawUserRole">Retailer Dukaan</div>
+          </div>
+          <div class="text-right">
+            <div class="text-[10px] text-slate-500 uppercase font-semibold">Available Balance</div>
+            <div class="text-sm font-black text-emerald-700 font-mono" id="withdrawAvailableBal">₹1,000.00</div>
+          </div>
+        </div>
+
+        <!-- Amount Input -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Withdrawal Amount (₹)</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-bold text-xs">₹</span>
+            <input id="withdrawAmt" type="number" value="200" min="10" step="10" class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-8 pr-3 py-2 text-sm text-slate-900 font-mono font-bold focus:bg-white focus:outline-none focus:border-emerald-600 transition">
+          </div>
+          <div class="flex gap-2 mt-1.5">
+            <button onclick="document.getElementById('withdrawAmt').value=100" class="text-[11px] px-2.5 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold border border-slate-200">₹100</button>
+            <button onclick="document.getElementById('withdrawAmt').value=500" class="text-[11px] px-2.5 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold border border-slate-200">₹500</button>
+            <button onclick="setWithdrawMax()" class="text-[11px] px-2.5 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold border border-slate-200">Max Balance</button>
+          </div>
+        </div>
+
+        <!-- Payout Method Tabs (UPI vs Bank) -->
+        <div>
+          <div class="flex gap-4 border-b border-slate-200 pb-2 mb-2.5">
+            <button onclick="switchPayoutMethod('UPI')" id="tabPayoutUPI" class="text-xs font-bold text-emerald-700 pb-1 border-b-2 border-emerald-600">
+              <i class="fa-solid fa-qrcode mr-1"></i> UPI ID
+            </button>
+            <button onclick="switchPayoutMethod('BANK')" id="tabPayoutBANK" class="text-xs font-bold text-slate-500 hover:text-slate-900 pb-1 border-b-2 border-transparent">
+              <i class="fa-solid fa-building-columns mr-1"></i> Bank Account
+            </button>
+          </div>
+
+          <!-- UPI Form -->
+          <div id="payoutFormUPI" class="space-y-1.5">
+            <label class="block text-[11px] font-semibold text-slate-700">UPI Virtual ID (VPA)</label>
+            <input id="payoutUpiId" type="text" value="dukaan@okhdfcbank" placeholder="e.g. 9876543210@paytm" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600 transition">
+          </div>
+
+          <!-- Bank Account Form -->
+          <div id="payoutFormBANK" class="space-y-2 hidden">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-700">Bank Account Number</label>
+              <input id="payoutBankAcc" type="text" value="50100492817281" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-mono font-bold text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600 transition">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-700">IFSC Code</label>
+              <input id="payoutBankIfsc" type="text" value="HDFC0001234" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-mono font-bold text-slate-900 uppercase focus:bg-white focus:outline-none focus:border-emerald-600 transition">
+            </div>
+          </div>
+        </div>
+
+        <div class="p-2.5 bg-emerald-50 rounded-xl border border-emerald-200 text-[11px] text-emerald-800 flex items-center justify-between">
+          <span class="flex items-center gap-1.5 font-medium"><i class="fa-solid fa-bolt text-emerald-600"></i> IMPS Transfer Fee:</span>
+          <strong class="font-bold text-emerald-900">₹0.00 (FREE)</strong>
+        </div>
+
+        <!-- Submit Button -->
+        <button onclick="executeWithdrawal()" id="withdrawSubmitBtn" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-paper-plane"></i> Transfer to Bank Instantly
+        </button>
+
+      </div>
     </div>
   </div>
 
@@ -859,6 +1041,8 @@
       if (distAcc) {
         document.getElementById('headerDistBal').innerText = `₹${distAcc.balance_inr}`;
         document.getElementById('distPageBalance').innerText = `₹${distAcc.balance_inr}`;
+        const sDist = document.getElementById('superDistBalDisplay');
+        if (sDist) sDist.innerText = `Bal: ₹${distAcc.balance_inr}`;
       }
       if (retailerAcc) {
         document.getElementById('headerRetBal').innerText = `₹${retailerAcc.available_inr}`;
@@ -987,6 +1171,113 @@
       } finally {
         btn.disabled = false;
         btn.innerHTML = `<i class="fa-solid fa-check"></i> Pay ₹${currentCashfreeOrder?.amountInr || 500} (Simulate Success)`;
+      }
+    }
+
+    // Withdraw to Bank / UPI Modal Flow
+    let currentWithdrawUser = 'retailer';
+    let currentPayoutMethod = 'UPI';
+
+    function openWithdrawModal(userRole) {
+      currentWithdrawUser = userRole || 'retailer';
+      const roleLabel = currentWithdrawUser === 'distributor' ? 'Distributor Partner' : 'Retailer Dukaan';
+      const userRoleEl = document.getElementById('withdrawUserRole');
+      if (userRoleEl) userRoleEl.innerText = roleLabel;
+
+      const acc = currentAccounts.find(a => a.user_id === currentWithdrawUser);
+      const avail = acc ? acc.available_inr : '0.00';
+      const availEl = document.getElementById('withdrawAvailableBal');
+      if (availEl) availEl.innerText = `₹${avail}`;
+
+      const defAmt = Math.min(200, Math.floor(Number(avail) || 0));
+      document.getElementById('withdrawAmt').value = defAmt > 0 ? defAmt : 100;
+
+      switchPayoutMethod('UPI');
+      document.getElementById('withdrawModal').classList.remove('hidden');
+    }
+
+    function closeWithdrawModal() {
+      document.getElementById('withdrawModal').classList.add('hidden');
+    }
+
+    function switchPayoutMethod(method) {
+      currentPayoutMethod = method;
+      const tabUPI = document.getElementById('tabPayoutUPI');
+      const tabBANK = document.getElementById('tabPayoutBANK');
+      const formUPI = document.getElementById('payoutFormUPI');
+      const formBANK = document.getElementById('payoutFormBANK');
+
+      if (method === 'UPI') {
+        tabUPI.className = 'text-xs font-bold text-emerald-700 pb-1 border-b-2 border-emerald-600';
+        tabBANK.className = 'text-xs font-bold text-slate-500 hover:text-slate-900 pb-1 border-b-2 border-transparent';
+        formUPI.classList.remove('hidden');
+        formBANK.classList.add('hidden');
+      } else {
+        tabBANK.className = 'text-xs font-bold text-emerald-700 pb-1 border-b-2 border-emerald-600';
+        tabUPI.className = 'text-xs font-bold text-slate-500 hover:text-slate-900 pb-1 border-b-2 border-transparent';
+        formBANK.classList.remove('hidden');
+        formUPI.classList.add('hidden');
+      }
+    }
+
+    function setWithdrawMax() {
+      const acc = currentAccounts.find(a => a.user_id === currentWithdrawUser);
+      if (acc) {
+        document.getElementById('withdrawAmt').value = Math.floor(Number(acc.available_inr) || 0);
+      }
+    }
+
+    async function executeWithdrawal() {
+      const amountInr = Number(document.getElementById('withdrawAmt').value);
+      if (!amountInr || amountInr <= 0) return alert('Enter valid withdrawal amount');
+
+      let destinationDetails = '';
+      if (currentPayoutMethod === 'UPI') {
+        destinationDetails = document.getElementById('payoutUpiId').value.trim();
+        if (!destinationDetails) return alert('Enter valid UPI ID');
+      } else {
+        const accNo = document.getElementById('payoutBankAcc').value.trim();
+        const ifsc = document.getElementById('payoutBankIfsc').value.trim();
+        if (!accNo || !ifsc) return alert('Enter valid Bank Account Number and IFSC');
+        destinationDetails = `A/c: ${accNo} (IFSC: ${ifsc})`;
+      }
+
+      const btn = document.getElementById('withdrawSubmitBtn');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Processing IMPS Payout...`;
+
+      try {
+        const res = await fetch('/api/withdraw', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: currentWithdrawUser,
+            amountInr,
+            payoutMethod: currentPayoutMethod,
+            destinationDetails
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          closeWithdrawModal();
+          const msg = `🎉 Payout SUCCESS! ₹${amountInr} transferred to ${destinationDetails} via IMPS (Ref: ${data.result.rrn})!`;
+          if (currentWithdrawUser === 'distributor') {
+            showDistAlert(msg, 'success');
+          } else {
+            showRetAlert(msg, 'success');
+          }
+          currentAccounts = data.accounts;
+          renderBalances();
+          fetchLedger();
+        } else {
+          alert('Withdrawal Failed: ' + data.error);
+        }
+      } catch (err) {
+        alert('Network error: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Transfer to Bank Instantly`;
       }
     }
 
@@ -1132,39 +1423,95 @@
       });
     }
 
+    const reportedDisputes = new Set();
+
     async function fetchPending() {
       try {
         const res = await fetch('/api/pending');
         const data = await res.json();
-        const section = document.getElementById('superPendingSection');
-        const list = document.getElementById('superPendingList');
-        const count = document.getElementById('superPendingCount');
+        const superSection = document.getElementById('superPendingSection');
+        const superList = document.getElementById('superPendingList');
+        const superCount = document.getElementById('superPendingCount');
 
-        if (data.success && data.pending.length > 0) {
-          section.classList.remove('hidden');
-          count.innerText = data.pending.length;
-          list.innerHTML = '';
-          data.pending.forEach(tx => {
-            const div = document.createElement('div');
-            div.className = 'bg-white p-3.5 rounded-xl border border-amber-200 flex justify-between items-center shadow-xs';
-            div.innerHTML = `
-              <div>
-                <div class="font-mono text-xs text-slate-900 font-bold">${tx.id}</div>
-                <div class="text-[11px] text-slate-500">Customer: ${tx.recipient} (${tx.operator}) • ₹${(tx.amount_paise/100).toFixed(2)}</div>
-              </div>
-              <div class="flex gap-2">
-                <button onclick="resolveTx('${tx.id}', 'SUCCESS')" class="px-3 py-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold transition">Settle SUCCESS</button>
-                <button onclick="resolveTx('${tx.id}', 'FAILED')" class="px-3 py-1.5 text-xs bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold transition">Settle FAILED</button>
-              </div>
-            `;
-            list.appendChild(div);
-          });
-        } else {
-          section.classList.add('hidden');
+        const retSection = document.getElementById('retPendingDisputeSection');
+        const retList = document.getElementById('retPendingList');
+        const retCount = document.getElementById('retPendingCount');
+
+        const pendingList = (data.success && data.pending) ? data.pending : [];
+
+        // 1. Super Master Resolver List
+        if (superSection && superList) {
+          if (pendingList.length > 0) {
+            superSection.classList.remove('hidden');
+            superCount.innerText = pendingList.length;
+            superList.innerHTML = '';
+            pendingList.forEach(tx => {
+              const isDispute = reportedDisputes.has(tx.id);
+              const div = document.createElement('div');
+              div.className = `p-3.5 rounded-xl border flex justify-between items-center shadow-xs ${isDispute ? 'bg-rose-50 border-rose-300' : 'bg-white border-amber-200'}`;
+              div.innerHTML = `
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono text-xs text-slate-900 font-bold">${tx.id}</span>
+                    ${isDispute ? '<span class="text-[10px] font-black px-2 py-0.5 rounded bg-rose-600 text-white animate-pulse">🚨 DUKAAN DISPUTE RAISED</span>' : ''}
+                  </div>
+                  <div class="text-[11px] text-slate-500 mt-0.5">Customer: ${tx.recipient} (${tx.operator}) • ₹${(tx.amount_paise/100).toFixed(2)}</div>
+                </div>
+                <div class="flex gap-2">
+                  <button onclick="resolveTx('${tx.id}', 'SUCCESS')" class="px-3 py-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold transition">Settle SUCCESS</button>
+                  <button onclick="resolveTx('${tx.id}', 'FAILED')" class="px-3 py-1.5 text-xs bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold transition">Settle FAILED (Refund)</button>
+                </div>
+              `;
+              superList.appendChild(div);
+            });
+          } else {
+            superSection.classList.add('hidden');
+          }
         }
+
+        // 2. Retailer Dukaan Pending & Dispute List
+        if (retSection && retList) {
+          if (pendingList.length > 0) {
+            retSection.classList.remove('hidden');
+            retCount.innerText = pendingList.length;
+            retList.innerHTML = '';
+            pendingList.forEach(tx => {
+              const isDispute = reportedDisputes.has(tx.id);
+              const div = document.createElement('div');
+              div.className = 'bg-white p-3 rounded-xl border border-amber-200 flex justify-between items-center shadow-2xs';
+              div.innerHTML = `
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono text-xs text-slate-900 font-bold">${tx.id}</span>
+                    ${isDispute ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300">⚠️ Super Admin Notified</span>' : ''}
+                  </div>
+                  <div class="text-[11px] text-slate-500 mt-0.5">${tx.operator} Recharge • ₹${(tx.amount_paise/100).toFixed(2)} to ${tx.recipient}</div>
+                </div>
+                <div>
+                  ${isDispute 
+                    ? '<span class="text-xs font-bold text-amber-700 flex items-center gap-1.5"><i class="fa-solid fa-check"></i> Ticket Open</span>'
+                    : `<button onclick="reportDispute('${tx.id}')" class="px-2.5 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded-lg text-xs font-bold flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-bell text-amber-700"></i> Notify Super Admin
+                      </button>`
+                  }
+                </div>
+              `;
+              retList.appendChild(div);
+            });
+          } else {
+            retSection.classList.add('hidden');
+          }
+        }
+
       } catch (err) {
         console.error(err);
       }
+    }
+
+    function reportDispute(txId) {
+      reportedDisputes.add(txId);
+      alert(`🚨 Support Ticket Raised! Super Master Admin has been notified about transaction ${txId}. They will verify with telecom operator and either settle or refund your ₹100.`);
+      fetchPending();
     }
 
     async function resolveTx(transactionId, finalStatus) {
@@ -1176,6 +1523,49 @@
       const data = await res.json();
       if (data.success) {
         fetchAllData();
+      }
+    }
+
+    async function allocateStockToDistributor() {
+      const amountInr = Number(document.getElementById('superStockAmount').value);
+      const note = document.getElementById('superStockNote').value.trim() || 'Super Master Wholesale Stock Allocation';
+      const btn = document.getElementById('superStockBtn');
+
+      if (!amountInr || amountInr <= 0) return alert('Enter valid stock amount');
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Allocating Stock...`;
+
+      try {
+        const res = await fetch('/api/add-money', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: 'distributor',
+            amountInr,
+            notes: note
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          const alertEl = document.getElementById('superStockAlert');
+          alertEl.className = 'mt-3 p-2.5 rounded-xl text-xs font-bold border bg-emerald-50 text-emerald-800 border-emerald-200';
+          alertEl.innerHTML = `🎉 Successfully credited ₹${amountInr.toLocaleString('en-IN')} wholesale stock to Distributor! (Ref: ${data.result.referenceId})`;
+          alertEl.classList.remove('hidden');
+          setTimeout(() => alertEl.classList.add('hidden'), 5000);
+
+          currentAccounts = data.accounts;
+          renderBalances();
+          fetchLedger();
+        } else {
+          alert('Allocation failed: ' + data.error);
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-boxes-packing"></i> Credit Stock to Distributor`;
       }
     }
 
