@@ -235,7 +235,11 @@ app.post('/api/recharge', async (req, res) => {
     let finalResult;
 
     if (providerRes.status === 'SUCCESS') {
-      finalResult = await ledger.finalizeSuccess(transactionId);
+      finalResult = await ledger.finalizeSuccess(
+        transactionId,
+        providerRes.operatorCommissionPaise,
+        providerRes.operatorRef
+      );
     } else if (providerRes.status === 'FAILED') {
       finalResult = await ledger.finalizeFailed(transactionId, 'Provider failed to reach telecom operator');
     } else {
@@ -244,14 +248,20 @@ app.post('/api/recharge', async (req, res) => {
         success: true,
         status: 'PENDING',
         transactionId,
-        message: 'Recharge is currently processing at the telecom operator. Amount remains held in Supabase.'
+        message: 'Recharge is currently processing at telecom operator via Pay2All. Amount remains held in Supabase until Webhook arrives.'
       };
     }
 
     const responsePayload = {
       success: true,
       transactionId,
+      provider: providerRes.provider,
       providerRef: providerRes.providerRef,
+      operatorRef: providerRes.operatorRef,
+      pay2allOrderId: providerRes.pay2allOrderId,
+      marginPercent: providerRes.marginPercent,
+      pay2allCommissionPaise: providerRes.operatorCommissionPaise,
+      pay2allCommissionInr: providerRes.operatorCommissionInr,
       status: providerRes.status,
       details: finalResult
     };
@@ -266,6 +276,53 @@ app.post('/api/recharge', async (req, res) => {
     res.json({ ...responsePayload, accounts });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+// 6.5 Official Pay2All Webhook Callback Receiver
+app.post('/api/pay2all/webhook', async (req, res) => {
+  try {
+    const {
+      client_id,
+      transaction_id,
+      status = 'SUCCESS',
+      pay2all_commission,
+      commission_paise,
+      operator_ref,
+      reason
+    } = req.body;
+
+    const txId = client_id || transaction_id;
+    if (!txId) {
+      return res.status(400).json({ success: false, error: 'Missing client_id or transaction_id in webhook payload' });
+    }
+
+    console.log(`[Pay2All Webhook Received] Tx: ${txId}, Status: ${status}, Commission: ₹${pay2all_commission || (commission_paise ? (commission_paise / 100).toFixed(2) : '0')}`);
+
+    let commissionPaise = null;
+    if (commission_paise !== undefined && commission_paise !== null) {
+      commissionPaise = Number(commission_paise);
+    } else if (pay2all_commission !== undefined && pay2all_commission !== null) {
+      commissionPaise = Math.round(Number(pay2all_commission) * 100);
+    }
+
+    let result;
+    if (status.toUpperCase() === 'SUCCESS') {
+      result = await ledger.finalizeSuccess(txId, commissionPaise, operator_ref);
+    } else {
+      result = await ledger.finalizeFailed(txId, reason || 'Transaction marked FAILED by Pay2All Webhook');
+    }
+
+    const accounts = await ledger.getAllAccounts();
+    res.json({
+      success: true,
+      message: 'Pay2All Webhook processed and ledger updated in Supabase',
+      result,
+      accounts
+    });
+  } catch (err) {
+    console.error('[Pay2All Webhook Error]:', err.message);
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 

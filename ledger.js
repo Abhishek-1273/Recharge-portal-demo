@@ -190,7 +190,7 @@ function holdForRecharge(userId, amountPaise, transactionId, serviceType, recipi
 }
 
 // Finalize SUCCESS
-function finalizeSuccess(transactionId) {
+function finalizeSuccess(transactionId, customProviderCommissionPaise = null, operatorRef = null) {
   return financialQueue.acquire(async () => {
     const { data: tx, error: txErr } = await supabase
       .from('transactions')
@@ -203,14 +203,25 @@ function finalizeSuccess(transactionId) {
 
     const amountPaise = Number(tx.amount_paise);
 
-    // 3% Provider commission = 300 paise on Rs 100
-    const providerCommission = Math.round((amountPaise * 300) / 10000);
+    // Real Pay2All Gross Commission
+    let providerCommission;
+    if (customProviderCommissionPaise !== null && customProviderCommissionPaise !== undefined) {
+      providerCommission = Number(customProviderCommissionPaise);
+    } else {
+      // Default 2.50% if not passed
+      providerCommission = Math.round((amountPaise * 250) / 10000);
+    }
+
     // 0.25% Platform Fee = 25 paise on Rs 100
     const platformFee = Math.round((amountPaise * 25) / 10000);
 
-    const retailerShare = Math.round((amountPaise * 150) / 10000); // 1.50%
-    const distributorShare = Math.round((amountPaise * 100) / 10000); // 1.00%
-    const superShare = providerCommission - (retailerShare + distributorShare); // 0.50%
+    // Distribution of Pay2All Gross Commission:
+    // Retailer: 50%
+    // Distributor: 30%
+    // Super Master: 20%
+    const retailerShare = Math.round(providerCommission * 0.50);
+    const distributorShare = Math.round(providerCommission * 0.30);
+    const superShare = providerCommission - (retailerShare + distributorShare);
 
     // 1. Decrement Retailer Balance and Hold
     const { data: retAcc } = await supabase.from('accounts').select('balance_paise, hold_paise').eq('user_id', tx.user_id).single();
@@ -225,32 +236,35 @@ function finalizeSuccess(transactionId) {
       amount_paise: -amountPaise,
       type: 'RECHARGE_DEBIT',
       reference_id: transactionId,
-      notes: `Final debit for successful recharge`
+      notes: `Final debit for successful recharge (${tx.service_type || 'MOBILE'} - ${tx.recipient || ''})`
     }]);
 
     // 2. Increment Commission & App Fee across the 3 Tiers
+    const opRefText = operatorRef ? ` [Ref: ${operatorRef}]` : '';
     const splits = [
-      { userId: 'retailer', amount: retailerShare, note: `Retailer Commission (1.50%)` },
-      { userId: 'distributor', amount: distributorShare, note: `Distributor Commission (1.00%)` },
-      { userId: 'super', amount: superShare, note: `Super Distributor Commission (0.50%)` },
+      { userId: 'retailer', amount: retailerShare, note: `Pay2All Commission Credit (₹${(retailerShare / 100).toFixed(2)})${opRefText}` },
+      { userId: 'distributor', amount: distributorShare, note: `Pay2All Downline Commission (₹${(distributorShare / 100).toFixed(2)})${opRefText}` },
+      { userId: 'super', amount: superShare, note: `Pay2All Master Commission (₹${(superShare / 100).toFixed(2)})${opRefText}` },
       { userId: 'super', amount: platformFee, type: 'PLATFORM_FEE', note: `App 0.25% Platform Fee` }
     ];
 
     for (const split of splits) {
       if (split.amount > 0) {
         const { data: userAcc } = await supabase.from('accounts').select('balance_paise').eq('user_id', split.userId).single();
-        await supabase.from('accounts').update({
-          balance_paise: Number(userAcc.balance_paise) + split.amount
-        }).eq('user_id', split.userId);
+        if (userAcc) {
+          await supabase.from('accounts').update({
+            balance_paise: Number(userAcc.balance_paise) + split.amount
+          }).eq('user_id', split.userId);
 
-        await supabase.from('ledger_entries').insert([{
-          entry_id: uuidv4(),
-          user_id: split.userId,
-          amount_paise: split.amount,
-          type: split.type || 'COMMISSION',
-          reference_id: transactionId,
-          notes: split.note
-        }]);
+          await supabase.from('ledger_entries').insert([{
+            entry_id: uuidv4(),
+            user_id: split.userId,
+            amount_paise: split.amount,
+            type: split.type || 'COMMISSION',
+            reference_id: transactionId,
+            notes: split.note
+          }]);
+        }
       }
     }
 
@@ -266,9 +280,13 @@ function finalizeSuccess(transactionId) {
       success: true,
       status: 'SUCCESS',
       transactionId,
+      operatorRef: operatorRef || ('BRN' + Math.floor(10000000 + Math.random() * 90000000)),
       debitedPaise: amountPaise,
+      debitedInr: (amountPaise / 100).toFixed(2),
       providerCommissionPaise: providerCommission,
+      providerCommissionInr: (providerCommission / 100).toFixed(2),
       platformFeePaise: platformFee,
+      platformFeeInr: (platformFee / 100).toFixed(2),
       splits: {
         retailer: retailerShare,
         distributor: distributorShare,
